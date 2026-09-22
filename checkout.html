@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout Seguro | Tienda Camping</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo-area">
+        <span class="logo-icon">⛺</span>
+        <span>CAMPING STORE</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Catálogo</a>
+        <a href="cart.html">🛒 Carrito</a>
+        <div id="nav-auth" style="display: flex; align-items: center; gap: 0.75rem;"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container" style="max-width: 700px;">
+    <!-- Barra de 3 Pasos (RNF-USA-02) -->
+    <div class="steps-container">
+      <div class="step-item active">
+        <div class="step-number">1</div>
+        <div class="step-label">Datos de Envío</div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-label">Resumen y Reserva</div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-label">Pasarela de Pago</div>
+      </div>
+    </div>
+
+    <!-- Paso 1: Datos de Despacho -->
+    <section id="step-1-container" class="filters-card">
+      <h2 style="color: var(--primary-dark); margin-bottom: 1rem;">1. Dirección de Entrega</h2>
+      <form id="shipping-form">
+        <div class="filter-group">
+          <label for="ship-street">Calle, Altura y Piso/Depto:</label>
+          <input type="text" id="ship-street" required placeholder="Av. Los Glaciares 1420" value="Av. San Martín 850" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="filter-group">
+            <label for="ship-city">Ciudad:</label>
+            <input type="text" id="ship-city" required placeholder="San Carlos de Bariloche" value="Bariloche" />
+          </div>
+          <div class="filter-group">
+            <label for="ship-state">Provincia / Región:</label>
+            <input type="text" id="ship-state" required placeholder="Río Negro" value="Río Negro" />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="filter-group">
+            <label for="ship-zip">Código Postal:</label>
+            <input type="text" id="ship-zip" required placeholder="8400" value="8400" />
+          </div>
+          <div class="filter-group">
+            <label for="ship-country">País:</label>
+            <input type="text" id="ship-country" required placeholder="Argentina" value="Argentina" />
+          </div>
+        </div>
+        <div class="filter-group">
+          <label for="ship-phone">Teléfono de Contacto:</label>
+          <input type="tel" id="ship-phone" required placeholder="+54 294 4123456" value="+54 294 4556677" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          Continuar a Revisión (Paso 2) &rarr;
+        </button>
+      </form>
+    </section>
+
+    <!-- Paso 2: Resumen y Reserva Atómica (CU-13) -->
+    <section id="step-2-container" style="display: none;">
+      <h2 style="color: var(--primary-dark); margin-bottom: 1rem;">2. Confirmación de Orden</h2>
+      <div id="step-2-summary"></div>
+    </section>
+
+    <!-- Paso 3: Pasarela de Pago Simulada (CU-14, CU-15) -->
+    <section id="step-3-container" style="display: none;" class="filters-card">
+      <h2 style="color: var(--primary-dark); margin-bottom: 0.5rem;">3. Pasarela de Pago Externa</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Integración externa segura (cumplimiento PCI-DSS RNF-SEC-03: sin captura de tarjetas en el comercio). Simula la respuesta emitida por el proveedor de pagos hacia el webhook seguro con firma HMAC.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <button class="btn btn-primary" onclick="simulatePaymentAction('approved')">
+          💳 Simular Pago Aprobado (Webhook Approved)
+        </button>
+        <button class="btn btn-danger" onclick="simulatePaymentAction('rejected')">
+          🚫 Simular Pago Rechazado (Webhook Rejected)
+        </button>
+      </div>
+
+      <div id="payment-status-result"></div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

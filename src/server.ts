@@ -36,7 +36,8 @@ const MIME_TYPES: Record<string, string> = {
  * Convierte un IncomingMessage de Node.js a un Request estándar Web API
  */
 async function createWebRequest(req: http.IncomingMessage, bodyLimitBytes: number): Promise<Request> {
-  const url = `http://${req.headers.host || "localhost"}${req.url}`;
+  const rawUrl = (req.headers["x-matched-path"] as string) || req.url || "/";
+  const url = `http://${req.headers.host || "localhost"}${rawUrl}`;
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
     if (value) {
@@ -114,7 +115,8 @@ export async function appHandler(req: http.IncomingMessage, res: http.ServerResp
       return;
     }
 
-    const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+    const rawUrl = (req.headers["x-matched-path"] as string) || req.url || "/";
+    const url = new URL(rawUrl, `http://${req.headers.host || "localhost"}`);
     const pathname = url.pathname;
 
     // RNF-SEC-09: Límites de Payload (2MB general, 8MB admin products)
