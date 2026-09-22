@@ -82,11 +82,28 @@ async function sendWebResponse(res: http.ServerResponse, webRes: Response): Prom
   res.end(Buffer.from(arrayBuffer));
 }
 
-export function createServer(): http.Server {
-  return http.createServer(async (req, res) => {
-    const origin = req.headers.origin || "*";
-    // Configuración de CORS según antigravity.yaml
-    res.setHeader("Access-Control-Allow-Origin", origin);
+let isInitialized = false;
+let initPromise: Promise<void> | null = null;
+
+export async function ensureDbInitialized(): Promise<void> {
+  if (isInitialized) return;
+  if (!initPromise) {
+    initPromise = (async () => {
+      await initPragmas();
+      await migrate();
+      await seed();
+      isInitialized = true;
+    })();
+  }
+  await initPromise;
+}
+
+export async function appHandler(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  await ensureDbInitialized();
+
+  const origin = req.headers.origin || "*";
+  // Configuración de CORS según antigravity.yaml
+  res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-signature-hmac, x-correlation-id");
     res.setHeader("Access-Control-Max-Age", "86400");
@@ -237,13 +254,14 @@ export function createServer(): http.Server {
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ error: "Internal Server Error" }));
     }
-  });
+}
+
+export function createServer(): http.Server {
+  return http.createServer(appHandler);
 }
 
 export async function startServer(): Promise<http.Server> {
-  await initPragmas();
-  await migrate();
-  await seed();
+  await ensureDbInitialized();
 
   const server = createServer();
   server.listen(config.port, () => {
