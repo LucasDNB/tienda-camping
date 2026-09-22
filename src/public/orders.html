@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Pedidos | Tienda Camping</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo-area">
+        <span class="logo-icon">⛺</span>
+        <span>CAMPING STORE</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Catálogo</a>
+        <a href="cart.html">🛒 Carrito</a>
+        <div id="nav-auth" style="display: flex; align-items: center; gap: 0.75rem;"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container" style="max-width: 800px;">
+    <h1 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Historial de Pedidos</h1>
+    <div id="orders-list">
+      <!-- Inyectado dinámicamente por app.js -->
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

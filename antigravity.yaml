@@ -1,0 +1,164 @@
+version: "1.0"
+project: "camping-ecommerce-serverless"
+
+environment:
+  DATABASE_URL: "file:local.db"
+  DATABASE_AUTH_TOKEN: ""
+  JWT_SECRET: "camping-secret-key-change-in-production-min32chars"
+  PAYMENT_SECRET: "payment-webhook-secret-key-camping-outdoor"
+  APP_ENV: "development"
+  PORT: "3000"
+
+gateway:
+  cors:
+    allow_origins: 
+      - "https://tiendacamping.com"
+      - "https://admin.tiendacamping.com"
+      - "http://localhost:3000"
+    allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    allow_headers: ["Content-Type", "Authorization", "x-signature-hmac"]
+    max_age_seconds: 86400
+
+  firewall:
+    body_limit_default: "2MB"
+    body_limits:
+      - path: "/api/v1/admin/products"
+        limit: "8MB"
+
+  rate_limiting:
+    - path: "/api/v1/auth/*"
+      rule: "ip_and_key"
+      max_requests: 5
+      window_seconds: 900
+    - path: "/api/v1/checkout/*"
+      rule: "authenticated_user"
+      max_requests: 30
+      window_seconds: 60
+    - path: "/api/v1/*"
+      rule: "client_ip"
+      max_requests: 60
+      window_seconds: 60
+
+functions:
+  # Rutas de Autenticación
+  - name: fn-auth-register
+    handler: "dist/handlers/auth.register"
+    memory_mb: 256
+    timeout_seconds: 3
+    routes:
+      - method: "POST"
+        path: "/api/v1/auth/register"
+
+  - name: fn-auth-login
+    handler: "dist/handlers/auth.login"
+    memory_mb: 256
+    timeout_seconds: 3
+    routes:
+      - method: "POST"
+        path: "/api/v1/auth/login"
+
+  # Catálogo Público
+  - name: fn-catalog-list
+    handler: "dist/handlers/catalog.list"
+    memory_mb: 256
+    timeout_seconds: 2
+    routes:
+      - method: "GET"
+        path: "/api/v1/products"
+
+  - name: fn-catalog-detail
+    handler: "dist/handlers/catalog.detail"
+    memory_mb: 256
+    timeout_seconds: 2
+    routes:
+      - method: "GET"
+        path: "/api/v1/products/:id"
+
+  # Carrito y Checkout
+  - name: fn-cart-sync
+    handler: "dist/handlers/cart.sync"
+    memory_mb: 256
+    timeout_seconds: 2
+    routes:
+      - method: "GET"
+        path: "/api/v1/cart"
+      - method: "POST"
+        path: "/api/v1/cart"
+
+  - name: fn-cart-mutate
+    handler: "dist/handlers/cart.mutate"
+    memory_mb: 256
+    timeout_seconds: 2
+    routes:
+      - method: "PATCH"
+        path: "/api/v1/cart/items/:id"
+      - method: "DELETE"
+        path: "/api/v1/cart/items/:id"
+
+  - name: fn-checkout-session
+    handler: "dist/handlers/checkout.session"
+    memory_mb: 512
+    timeout_seconds: 3
+    routes:
+      - method: "POST"
+        path: "/api/v1/checkout/session"
+
+  # Webhooks y Background Workers
+  - name: fn-payment-webhook
+    handler: "dist/handlers/webhook.handler"
+    memory_mb: 256
+    timeout_seconds: 2
+    routes:
+      - method: "POST"
+        path: "/api/v1/payments/webhook"
+
+  - name: fn-worker-processor
+    handler: "dist/handlers/workers.paymentProcessor"
+    memory_mb: 512
+    timeout_seconds: 15
+    events:
+      - queue: "payment-events"
+        batch_size: 10
+        max_retry_attempts: 3
+
+  # Tarea Programada de Limpieza
+  - name: fn-cron-cleaner
+    handler: "dist/handlers/workers.stockCleaner"
+    memory_mb: 256
+    timeout_seconds: 10
+    schedule: "*/5 * * * *"
+
+  # Administración
+  - name: fn-admin-products
+    handler: "dist/handlers/admin.products"
+    memory_mb: 256
+    timeout_seconds: 3
+    routes:
+      - method: "GET"
+        path: "/api/v1/admin/products"
+      - method: "POST"
+        path: "/api/v1/admin/products"
+      - method: "PUT"
+        path: "/api/v1/admin/products/:id"
+      - method: "DELETE"
+        path: "/api/v1/admin/products/:id"
+
+  - name: fn-admin-orders
+    handler: "dist/handlers/admin.orders"
+    memory_mb: 256
+    timeout_seconds: 3
+    routes:
+      - method: "GET"
+        path: "/api/v1/admin/orders"
+      - method: "PATCH"
+        path: "/api/v1/admin/orders/:id"
+
+  - name: fn-admin-users
+    handler: "dist/handlers/admin.users"
+    memory_mb: 256
+    timeout_seconds: 3
+    routes:
+      - method: "GET"
+        path: "/api/v1/admin/users"
+      - method: "PATCH"
+        path: "/api/v1/admin/users/:id"

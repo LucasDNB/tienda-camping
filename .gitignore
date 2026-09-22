@@ -1,0 +1,23 @@
+# Dependencias
+node_modules/
+
+# Build / Salida de compilación
+dist/
+
+# Base de datos SQLite local y WAL
+*.db
+*.db-wal
+*.db-shm
+local.db*
+
+# Variables de entorno
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

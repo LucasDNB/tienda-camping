@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración | Tienda Camping</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo-area">
+        <span class="logo-icon">⛺</span>
+        <span>CAMPING STORE — ADMIN</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Ver Tienda</a>
+        <div id="nav-auth" style="display: flex; align-items: center; gap: 0.75rem;"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <h1 style="color: var(--primary-dark);">Panel de Control Operativo</h1>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-primary" onclick="openNewProductModal()">+ Nuevo Producto</button>
+        <button class="btn btn-outline" onclick="triggerCronCleaner()">⏱️ Ejecutar Limpiador de Stock (Cron)</button>
+      </div>
+    </div>
+
+    <!-- Pestañas de Navegación del Admin -->
+    <div style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem;">
+      <button class="nav-btn" style="color: var(--primary); font-weight: 700; border-bottom: 2px solid var(--primary);" onclick="showAdminTab('products')">Catálogo & Stock (RF-07, RF-08)</button>
+      <button class="nav-btn" onclick="showAdminTab('orders')">Despacho de Pedidos (RF-16)</button>
+      <button class="nav-btn" onclick="showAdminTab('users')">Usuarios del Sistema (RF-04)</button>
+    </div>
+
+    <!-- Sección 1: Productos y Stock -->
+    <section id="admin-tab-products">
+      <h2 style="margin-bottom: 1rem; color: var(--text-dark); font-size: 1.25rem;">Gestión de Productos e Inventario Físico</h2>
+      <div id="admin-products-table" style="overflow-x: auto;">
+        <!-- Inyectado por app.js -->
+      </div>
+    </section>
+
+    <!-- Sección 2: Pedidos -->
+    <section id="admin-tab-orders" style="display: none;">
+      <h2 style="margin-bottom: 1rem; color: var(--text-dark); font-size: 1.25rem;">Auditoría y Transición de Estados Logísticos</h2>
+      <div id="admin-orders-table" style="overflow-x: auto;">
+        <!-- Inyectado por app.js -->
+      </div>
+    </section>
+
+    <!-- Sección 3: Usuarios -->
+    <section id="admin-tab-users" style="display: none;">
+      <h2 style="margin-bottom: 1rem; color: var(--text-dark); font-size: 1.25rem;">Administración de Usuarios y Roles</h2>
+      <div id="admin-users-table" style="overflow-x: auto;">
+        <!-- Inyectado por app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Nuevo Producto -->
+  <div id="admin-modal-container"></div>
+
+  <script src="js/app.js"></script>
+  <script>
+    function showAdminTab(tab) {
+      document.getElementById('admin-tab-products').style.display = tab === 'products' ? 'block' : 'none';
+      document.getElementById('admin-tab-orders').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('admin-tab-users').style.display = tab === 'users' ? 'block' : 'none';
+    }
+
+    function openNewProductModal() {
+      const modal = document.getElementById('admin-modal-container');
+      modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeAdminModal(event)">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeAdminModal()">&times;</button>
+            <h2 style="color: var(--primary-dark); margin-bottom: 1rem;">Crear Nuevo Producto</h2>
+            <form id="new-prod-form" onsubmit="createProductAdmin(event)">
+              <div class="filter-group">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="np-name" required placeholder="Carpa Iglú 3P" />
+              </div>
+              <div class="filter-group">
+                <label>Slug (kebab-case):</label>
+                <input type="text" id="np-slug" required placeholder="carpa-iglu-3p" />
+              </div>
+              <div class="filter-group">
+                <label>Categoría:</label>
+                <select id="np-cat" required>
+                  <option value="cat_carpas">Carpas y Refugios</option>
+                  <option value="cat_bolsas">Bolsas de Dormir</option>
+                  <option value="cat_mochilas">Mochilas y Transporte</option>
+                  <option value="cat_iluminacion">Iluminación y Óptica</option>
+                  <option value="cat_cocina">Cocina y Supervivencia</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label>Descripción y Especificaciones:</label>
+                <textarea id="np-desc" rows="3" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-dark); border-radius: var(--radius-sm);" placeholder="Columna de agua 3000mm, varillas de fibra de vidrio..."></textarea>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="filter-group">
+                  <label>Precio (centavos USD):</label>
+                  <input type="number" id="np-price" required min="0" placeholder="19999 ($199.99)" />
+                </div>
+                <div class="filter-group">
+                  <label>Stock Físico Inicial:</label>
+                  <input type="number" id="np-stock" required min="0" placeholder="25" />
+                </div>
+              </div>
+              <div class="filter-group">
+                <label>URL de Imagen:</label>
+                <input type="url" id="np-img" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600" />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">Guardar Producto</button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal-container').innerHTML = '';
+    }
+
+    async function createProductAdmin(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('np-name').value,
+        slug: document.getElementById('np-slug').value,
+        category_id: document.getElementById('np-cat').value,
+        description: document.getElementById('np-desc').value,
+        price_cents: parseInt(document.getElementById('np-price').value, 10),
+        stock_available: parseInt(document.getElementById('np-stock').value, 10),
+        images: [document.getElementById('np-img').value],
+      };
+
+      try {
+        await apiCall('/api/v1/admin/products', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+        showToast('Producto creado exitosamente', 'success');
+        closeAdminModal();
+        loadAdminProducts();
+      } catch (err) {
+        showToast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>
