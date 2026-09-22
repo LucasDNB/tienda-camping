@@ -2,7 +2,6 @@
   "name": "tienda-camping",
   "version": "1.0.0",
   "description": "Plataforma de comercio electrónico de camping y outdoor basada en arquitectura Serverless",
-  "main": "dist/server.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
